@@ -1,7 +1,6 @@
-require "backstop-dimensioned/version"
+require 'scrolls'
+require 'securerandom'
+require 'sinatra/base'
 
-module Backstop
-  module Dimensioned
-    # Your code goes here...
-  end
-end
+require 'backstop-dimensioned/web'
+require "backstop-dimensioned/version"
