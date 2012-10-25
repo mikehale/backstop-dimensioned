@@ -3,6 +3,7 @@ module Backstop
 
     class Librato
       class MetricTooOldError < RuntimeError; end
+      include Backstop::Dimensioned::Log
 
       def auth
         Librato::Metrics.authenticate(Backstop::Config.librato_uri.user.gsub('%40', '@'), Backstop::Config.librato_uri.password)
@@ -36,7 +37,10 @@ module Backstop
       end
 
       def send_to_librato(*args)
-        queue.add(*args)
+        log(step: :send_to_librato) do
+          Librato::Metrics.submit(*args)
+          #queue.add(*args)
+        end
       end
 
       def publish(m)
