@@ -1,5 +1,6 @@
 require 'backstop-dimensioned'
 require 'webmock/rspec'
+require 'timecop'
 
 APP_ROOT = File.expand_path(File.dirname(__FILE__) + "/..")
 
