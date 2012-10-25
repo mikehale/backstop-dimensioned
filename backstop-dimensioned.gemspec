@@ -24,4 +24,5 @@ Gem::Specification.new do |gem|
   gem.add_dependency('rest-client')
   gem.add_dependency('scrolls')
   gem.add_dependency('sinatra')
+  gem.add_dependency('librato-metrics')
 end

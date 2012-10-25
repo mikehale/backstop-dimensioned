@@ -1,3 +1,5 @@
+require 'librato/metrics'
+
 module Backstop
   module Publisher
 
@@ -6,16 +8,16 @@ module Backstop
       include Backstop::Dimensioned::Log
 
       def auth
-        Librato::Metrics.authenticate(Backstop::Config.librato_uri.user.gsub('%40', '@'), Backstop::Config.librato_uri.password)
+        ::Librato::Metrics.authenticate(Backstop::Config.librato_uri.user.gsub('%40', '@'), Backstop::Config.librato_uri.password)
       end
 
       def queue
-        unless @@queue
+        unless @queue
           auth
-          @@queue ||= Librato::Metrics::Queue.new(:autosubmit_interval => 60, :autosubmit_count => 400)
+          @queue = ::Librato::Metrics::Queue.new(:autosubmit_interval => 60, :autosubmit_count => 400)
         end
 
-        @@queue
+        @queue
       end
 
       def source(m)
@@ -36,13 +38,6 @@ module Backstop
             ]
       end
 
-      def send_to_librato(*args)
-        log(step: :send_to_librato) do
-          Librato::Metrics.submit(*args)
-          #queue.add(*args)
-        end
-      end
-
       def publish(m)
         name = m["metric"]
         period = m["period"]
@@ -52,7 +47,7 @@ module Backstop
         source = source(m)
 
         if Time.at(measure_time.to_i) > (Time.now - 7140)
-          send_to_librato(name => { :period => period, :measure_time => measure_time }.merge(value).merge(source))
+          queue.add(name => { :period => period, :measure_time => measure_time }.merge(value).merge(source))
         else
           raise MetricTooOldError
         end

@@ -8,6 +8,8 @@ module Backstop
       env(key) || raise("missing #{key}")
     end
     
-    def self.librato_uri; env!("LIBRATO_URI"); end
+    def self.librato_uri
+      URI.parse(env!("LIBRATO_URI"))
+    end
   end
 end
