@@ -28,9 +28,9 @@ describe Backstop::Dimensioned::Web do
         last_response.should be_ok
       end
 
-      it "should submit the measurments to the catchers" do
+      it "should submit the measurments to the publishers" do
         Backstop::Publisher::Librato.any_instance.should_receive(:publish).with(data.first)
-        Backstop::Publisher::Graphite.any_instance.should_receive(:publish).with(data.first)
+        # Backstop::Publisher::Graphite.any_instance.should_receive(:publish).with(data.first)
         post "/publish/custom/dimensioned", data.to_json
       end
     end

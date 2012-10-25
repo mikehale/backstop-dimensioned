@@ -4,8 +4,17 @@ module Backstop
     class Librato
       class MetricTooOldError < RuntimeError; end
 
+      def auth
+        Librato::Metrics.authenticate(Backstop::Config.librato_uri.user.gsub('%40', '@'), Backstop::Config.librato_uri.password)
+      end
+
       def queue
-        @@queue ||= Librato::Metrics::Queue.new(:autosubmit_interval => 60, :autosubmit_count => 400)
+        unless @@queue
+          auth
+          @@queue ||= Librato::Metrics::Queue.new(:autosubmit_interval => 60, :autosubmit_count => 400)
+        end
+
+        @@queue
       end
 
       def source(m)

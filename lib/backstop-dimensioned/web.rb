@@ -4,7 +4,7 @@ module PublisherHelper
   def publish(measurements)
     measurements.each do |m|
       librato.publish(m)
-      graphite.publish(m)
+      #graphite.publish(m)
     end
   end
 
