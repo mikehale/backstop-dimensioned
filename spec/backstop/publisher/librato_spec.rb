@@ -15,42 +15,69 @@ describe Backstop::Publisher::Librato do
       subject.stub(:auth)
     end
 
-    let(:measure_time) { Time.now.to_i }
-    let(:measurment) {
-      {
-        "metric" => "foo",
-        "period" => 60,
-        "measure_time" => measure_time,
-        "dimensions" => %w[test joe bob],
-        "sum" => 100,
-        "min" => 8,
-        "max" => 12,
-        "count" => 10
-      }
-    }
     let(:stale_measurement) {
       Timecop.travel(Time.now - 60*60*2) do
-        measurment.merge("measure_time" => Time.now.to_i)
+        { "measure_time" => Time.now.to_i }
       end
     }
-
-    it "should queue the measurment" do
-      subject.queue.should_receive(:add).with(
-                                              "foo" => {
-                                                :period => 60,
-                                                :measure_time => measure_time,
-                                                :sum => 100,
-                                                :min => 8,
-                                                :max => 12,
-                                                :count => 10,
-                                                :source => "test.joe.bob"
-                                              })
-      subject.publish(measurment)
-    end
 
     it "should not queue old measurments" do
       subject.queue.should_not_receive(:add)
       lambda { subject.publish(stale_measurement) }.should raise_error Backstop::Publisher::Librato::MetricTooOldError
     end
+
+    context "multi measured sample" do
+      let(:measure_time) { Time.now.to_i }
+      let(:measurment) {
+        {
+          "metric" => "foo",
+          "period" => 60,
+          "measure_time" => measure_time,
+          "dimensions" => %w[test joe bob],
+          "sum" => 100,
+          "min" => 8,
+          "max" => 12,
+          "count" => 10
+        }
+      }
+
+      it "should queue the measurment" do
+        subject.queue.should_receive(:add).with(
+                                                "foo" => {
+                                                  :period => 60,
+                                                  :measure_time => measure_time,
+                                                  :sum => 100,
+                                                  :min => 8,
+                                                  :max => 12,
+                                                  :count => 10,
+                                                  :source => "test.joe.bob"
+                                                })
+        subject.publish(measurment)
+      end
+    end
+
+    context "single measured sample" do
+      let(:measure_time) { Time.now.to_i }
+      let(:measurment) {
+        {
+          "metric" => "foo",
+          "period" => 60,
+          "measure_time" => measure_time,
+          "dimensions" => %w[test joe bob],
+          "value" => 10
+        }
+      }
+      it "should queue the measurment" do
+        subject.queue.should_receive(:add).with(
+                                                "foo" => {
+                                                  :period => 60,
+                                                  :measure_time => measure_time,
+                                                  :value => 10,
+                                                  :source => "test.joe.bob"
+                                                })
+        subject.publish(measurment)
+      end
+    end
+
   end
 end

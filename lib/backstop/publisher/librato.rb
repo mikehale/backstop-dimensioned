@@ -14,7 +14,7 @@ module Backstop
       def queue
         unless @queue
           auth
-          @queue = ::Librato::Metrics::Queue.new(:autosubmit_interval => 60, :autosubmit_count => 400)
+          @queue = ::Librato::Metrics::Queue.new(:autosubmit_interval => 1, :autosubmit_count => 1)
         end
 
         @queue
@@ -30,12 +30,20 @@ module Backstop
         end
       end
 
+      def single_measurement?(m)
+        m.has_key?("value")
+      end
+
       def value(m)
-        Hash[
-             %w[sum min max count].map do |value_name|
-               [value_name.to_sym, m[value_name]]
-             end
-            ]
+        if single_measurement?(m)
+          { :value => m["value"] }
+        else
+          Hash[
+               %w[sum min max count].map do |value_name|
+                 [value_name.to_sym, m[value_name]]
+               end
+              ]
+        end
       end
 
       def publish(m)
@@ -46,8 +54,10 @@ module Backstop
         value = value(m)
         source = source(m)
 
+        data = { name => { :period => period, :measure_time => measure_time }.merge(value).merge(source) }
         if Time.at(measure_time.to_i) > (Time.now - 7140)
-          queue.add(name => { :period => period, :measure_time => measure_time }.merge(value).merge(source))
+          log(step: :queue, data: data)
+          queue.add(data)
         else
           raise MetricTooOldError
         end
