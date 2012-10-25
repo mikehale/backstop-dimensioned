@@ -2,9 +2,11 @@ require 'json'
 
 module PublisherHelper
   def publish(measurements)
-    measurements.each do |m|
-      librato.publish(m)
-      #graphite.publish(m)
+    log(step: :publish) do
+      measurements.each do |m|
+        librato.publish(m)
+        #graphite.publish(m)
+      end
     end
   end
 
@@ -26,12 +28,7 @@ module Backstop
     class Web < Sinatra::Base
 
       helpers PublisherHelper
-
-      helpers do
-        def log(data, &blk)
-          Scrolls.log(data.merge(:app => 'backstop-dimensioned', :ps => 'web'), &blk)
-        end
-      end
+      helpers Backstop::Dimensioned::Log
 
       post '/publish/custom/dimensioned' do
         publish(measurements(request))
