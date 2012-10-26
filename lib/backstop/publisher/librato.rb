@@ -55,6 +55,7 @@ module Backstop
         source = source(m)
 
         data = { name => { :period => period, :measure_time => measure_time }.merge(value).merge(source) }
+        
         if Time.at(measure_time.to_i) > (Time.now - 7140)
           log(step: :queue, data: data)
           queue.add(data)

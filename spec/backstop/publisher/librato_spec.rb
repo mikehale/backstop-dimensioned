@@ -21,14 +21,14 @@ describe Backstop::Publisher::Librato do
       end
     }
 
-    it "should not queue old measurments" do
+    it "should not queue old measurements" do
       subject.queue.should_not_receive(:add)
       lambda { subject.publish(stale_measurement) }.should raise_error Backstop::Publisher::Librato::MetricTooOldError
     end
 
     context "multi measured sample" do
       let(:measure_time) { Time.now.to_i }
-      let(:measurment) {
+      let(:measurement) {
         {
           "metric" => "foo",
           "period" => 60,
@@ -41,7 +41,7 @@ describe Backstop::Publisher::Librato do
         }
       }
 
-      it "should queue the measurment" do
+      it "should queue the measurement" do
         subject.queue.should_receive(:add).with(
                                                 "foo" => {
                                                   :period => 60,
@@ -52,13 +52,13 @@ describe Backstop::Publisher::Librato do
                                                   :count => 10,
                                                   :source => "test.joe.bob"
                                                 })
-        subject.publish(measurment)
+        subject.publish(measurement)
       end
     end
 
     context "single measured sample" do
       let(:measure_time) { Time.now.to_i }
-      let(:measurment) {
+      let(:measurement) {
         {
           "metric" => "foo",
           "period" => 60,
@@ -67,7 +67,7 @@ describe Backstop::Publisher::Librato do
           "value" => 10
         }
       }
-      it "should queue the measurment" do
+      it "should queue the measurement" do
         subject.queue.should_receive(:add).with(
                                                 "foo" => {
                                                   :period => 60,
@@ -75,7 +75,7 @@ describe Backstop::Publisher::Librato do
                                                   :value => 10,
                                                   :source => "test.joe.bob"
                                                 })
-        subject.publish(measurment)
+        subject.publish(measurement)
       end
     end
 
