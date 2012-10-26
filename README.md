@@ -18,7 +18,19 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Multi dimensional + Multi sample data:
+
+```
+curl -X POST -d
+'[{"metric":"test-foo","period":60,"measure_time":1351199760,"dimensions":["test","joe"],"sum":120,"min":8,"max":12,"count":10}]' localhost:5000/publish/custom/dimensioned
+```
+
+Single sample data, non-dimensioned data:
+
+```
+curl -X POST -d
+'[{"metric":"joe.test-foo","period":60,"measure_time":1351199760,"value":120}]' localhost:5000/publish/custom/dimensioned
+```
 
 ## Contributing
 
